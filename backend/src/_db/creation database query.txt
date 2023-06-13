@@ -1,0 +1,327 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+-- -----------------------------------------------------
+-- Schema mywonderplan_db
+-- -----------------------------------------------------
+DROP SCHEMA IF EXISTS `mywonderplan_db` ;
+
+-- -----------------------------------------------------
+-- Schema mywonderplan_db
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `mywonderplan_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci ;
+USE `mywonderplan_db` ;
+
+-- -----------------------------------------------------
+-- Table `mywonderplan_db`.`region`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mywonderplan_db`.`region` ;
+
+CREATE TABLE IF NOT EXISTS `mywonderplan_db`.`region` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `mywonderplan_db`.`city`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mywonderplan_db`.`city` ;
+
+CREATE TABLE IF NOT EXISTS `mywonderplan_db`.`city` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL DEFAULT NULL,
+  `regionID` INT NOT NULL,
+  `description` VARCHAR(100) NULL,
+  PRIMARY KEY (`id`),
+  INDEX `region_a_ville_idx` (`regionID` ASC) VISIBLE,
+  CONSTRAINT `region_a_ville`
+    FOREIGN KEY (`regionID`)
+    REFERENCES `mywonderplan_db`.`region` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `mywonderplan_db`.`schedule`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mywonderplan_db`.`schedule` ;
+
+CREATE TABLE IF NOT EXISTS `mywonderplan_db`.`schedule` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `startTime` TIME NULL,
+  `endTime` TIME NULL,
+  `sunday` TINYINT(1) NULL DEFAULT 1,
+  `monday` TINYINT(1) NULL DEFAULT 1,
+  `tuesday` TINYINT(1) NULL DEFAULT 1,
+  `wednesday` TINYINT(1) NULL DEFAULT 1,
+  `thursday` TINYINT(1) NULL DEFAULT 1,
+  `friday` TINYINT(1) NULL DEFAULT 1,
+  `saturday` TINYINT(1) NULL DEFAULT 1,
+  `holidays` TINYINT(1) NULL DEFAULT 0,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `mywonderplan_db`.`price`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mywonderplan_db`.`price` ;
+
+CREATE TABLE IF NOT EXISTS `mywonderplan_db`.`price` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `regular` DOUBLE NULL,
+  `child` DOUBLE NULL,
+  `foreigner` DOUBLE NULL,
+  `holRegular` DOUBLE NULL,
+  `holChildren` DOUBLE NULL,
+  `holForeigner` DOUBLE NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `mywonderplan_db`.`activity`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mywonderplan_db`.`activity` ;
+
+CREATE TABLE IF NOT EXISTS `mywonderplan_db`.`activity` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `cityID` INT NOT NULL,
+  `name` VARCHAR(45) NULL DEFAULT NULL,
+  `description` VARCHAR(150) NULL DEFAULT NULL,
+  `localisation` VARCHAR(45) NULL DEFAULT NULL,
+  `scheduleID` INT NULL DEFAULT NULL,
+  `priceListID` INT NULL DEFAULT NULL,
+  `statut` TINYINT(1) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `ville_a_activite_idx` (`cityID` ASC) VISIBLE,
+  INDEX `schedule_idx` (`scheduleID` ASC) VISIBLE,
+  INDEX `prices_idx` (`priceListID` ASC) VISIBLE,
+  CONSTRAINT `cityActivity`
+    FOREIGN KEY (`cityID`)
+    REFERENCES `mywonderplan_db`.`city` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `activitySchedule`
+    FOREIGN KEY (`scheduleID`)
+    REFERENCES `mywonderplan_db`.`schedule` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  CONSTRAINT `prices`
+    FOREIGN KEY (`priceListID`)
+    REFERENCES `mywonderplan_db`.`price` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `mywonderplan_db`.`user`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mywonderplan_db`.`user` ;
+
+CREATE TABLE IF NOT EXISTS `mywonderplan_db`.`user` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(45) NULL DEFAULT NULL,
+  `firstname` VARCHAR(45) NULL DEFAULT NULL,
+  `lastname` VARCHAR(45) NULL DEFAULT NULL,
+  `email` VARCHAR(45) NULL DEFAULT NULL,
+  `phone` INT(9) NULL DEFAULT NULL,
+  `hash` VARCHAR(45) NULL DEFAULT NULL,
+  `salt` VARCHAR(45) NULL DEFAULT NULL,
+  `profile_picture` VARCHAR(45) NULL DEFAULT NULL,
+  `statut` ENUM('Pending', 'Active', 'Disable') NULL DEFAULT 'Pending',
+  `verification_code` INT NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) VISIBLE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `mywonderplan_db`.`transaction`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mywonderplan_db`.`transaction` ;
+
+CREATE TABLE IF NOT EXISTS `mywonderplan_db`.`transaction` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `userID` INT NOT NULL,
+  `date` DATE NULL DEFAULT NULL,
+  `from` DATE NULL DEFAULT NULL,
+  `to` DATE NULL DEFAULT NULL,
+  `cost` DOUBLE NULL DEFAULT 0.00,
+  PRIMARY KEY (`id`),
+  INDEX `fk_transaction_user1_idx` (`userID` ASC) VISIBLE,
+  CONSTRAINT `fk_transaction_user1`
+    FOREIGN KEY (`userID`)
+    REFERENCES `mywonderplan_db`.`user` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `mywonderplan_db`.`transactionActivity`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mywonderplan_db`.`transactionActivity` ;
+
+CREATE TABLE IF NOT EXISTS `mywonderplan_db`.`transactionActivity` (
+  `transaction_id` INT NOT NULL,
+  `activité_id` INT NOT NULL,
+  PRIMARY KEY (`transaction_id`, `activité_id`),
+  INDEX `fk_transaction_has_activité_activité1_idx` (`activité_id` ASC) VISIBLE,
+  INDEX `fk_transaction_has_activité_transaction1_idx` (`transaction_id` ASC) VISIBLE,
+  CONSTRAINT `fk_transaction_has_activité_activité1`
+    FOREIGN KEY (`activité_id`)
+    REFERENCES `mywonderplan_db`.`activity` (`id`)
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_transaction_has_activité_transaction1`
+    FOREIGN KEY (`transaction_id`)
+    REFERENCES `mywonderplan_db`.`transaction` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `mywonderplan_db`.`transport`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mywonderplan_db`.`transport` ;
+
+CREATE TABLE IF NOT EXISTS `mywonderplan_db`.`transport` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(45) NULL,
+  `statut` TINYINT(1) NULL DEFAULT NULL,
+  `scheduleID` INT NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `schedule_idx` (`scheduleID` ASC) VISIBLE,
+  CONSTRAINT `transportSchedule`
+    FOREIGN KEY (`scheduleID`)
+    REFERENCES `mywonderplan_db`.`schedule` (`id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `mywonderplan_db`.`cityTransport`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mywonderplan_db`.`cityTransport` ;
+
+CREATE TABLE IF NOT EXISTS `mywonderplan_db`.`cityTransport` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `transportID` INT NOT NULL,
+  `cityID` INT NOT NULL,
+  `statut` TINYINT(1) NULL DEFAULT NULL,
+  PRIMARY KEY (`id`, `transportID`, `cityID`),
+  INDEX `fk_transport_has_ville_ville1_idx` (`cityID` ASC) VISIBLE,
+  INDEX `fk_transport_has_ville_transport1_idx` (`transportID` ASC) VISIBLE,
+  CONSTRAINT `fk_transport_has_ville_transport1`
+    FOREIGN KEY (`transportID`)
+    REFERENCES `mywonderplan_db`.`transport` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_transport_has_ville_ville1`
+    FOREIGN KEY (`cityID`)
+    REFERENCES `mywonderplan_db`.`city` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `mywonderplan_db`.`transportBook`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mywonderplan_db`.`transportBook` ;
+
+CREATE TABLE IF NOT EXISTS `mywonderplan_db`.`transportBook` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `time` DATETIME NULL DEFAULT NULL,
+  `cityFrom` INT NOT NULL,
+  `cityTo` INT NOT NULL,
+  `cost` DOUBLE NULL,
+  PRIMARY KEY (`id`),
+  INDEX `link-city-from_idx` (`cityFrom` ASC) VISIBLE,
+  INDEX `link-city-to_idx` (`cityTo` ASC) VISIBLE,
+  CONSTRAINT `link-city-from`
+    FOREIGN KEY (`cityFrom`)
+    REFERENCES `mywonderplan_db`.`cityTransport` (`cityID`)
+    ON DELETE NO ACTION
+    ON UPDATE CASCADE,
+  CONSTRAINT `link-city-to`
+    FOREIGN KEY (`cityTo`)
+    REFERENCES `mywonderplan_db`.`cityTransport` (`cityID`)
+    ON DELETE NO ACTION
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 1
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+-- -----------------------------------------------------
+-- Table `mywonderplan_db`.`transactionTransport`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mywonderplan_db`.`transactionTransport` ;
+
+CREATE TABLE IF NOT EXISTS `mywonderplan_db`.`transactionTransport` (
+  `transportBookID` INT NOT NULL,
+  `transactionID` INT NOT NULL,
+  PRIMARY KEY (`transportBookID`, `transactionID`),
+  INDEX `fk_transport_book_has_transaction_transaction1_idx` (`transactionID` ASC) VISIBLE,
+  INDEX `fk_transport_book_has_transaction_transport_book1_idx` (`transportBookID` ASC) VISIBLE,
+  CONSTRAINT `fk_transport_book_has_transaction_transaction1`
+    FOREIGN KEY (`transactionID`)
+    REFERENCES `mywonderplan_db`.`transaction` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_transport_book_has_transaction_transport_book1`
+    FOREIGN KEY (`transportBookID`)
+    REFERENCES `mywonderplan_db`.`transportBook` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_0900_ai_ci;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
