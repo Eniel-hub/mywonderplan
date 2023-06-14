@@ -56,7 +56,7 @@ const CreateUser = async (req, res, next) =>{
 
 const verifyEmailGetCode = async (req, res, next)=>{
     // let [user, ] = await service.GetUser(req.user);
-    let [User, ] = await service.GetUser('user1');
+    let [User, ] = await service.GetUser(req.user);
 
     User.verification_code = TOTP.generateAuthCode(env.OTPSECRET, 0) //code can be updated after a minute
     await service.saveCode(User)
@@ -165,7 +165,28 @@ const updatePassword = async (req, res, next) =>{
 }
 
 const forgetPassword = async (req, res, next) =>{
-    //todo: forget password
+    let username = req.body.username
+    let newPassword = req.body.newPassword;
+
+    if(!newPassword)
+        return res.status(400).json({error: "no new password"})
+    let [user, ] = await service.GetUser(username)
+    try {
+        if(pportMiddleware.CheckPassword(newPassword, user.hash, user.salt))
+            return res.status(400).json({error : "old password"})
+
+        let pass = helper.GenPassword(newPassword);
+        const User = {
+            username : username,
+            hash: pass.hash,
+            salt: pass.salt
+        }
+        await service.ChangePassword(User);
+        return res.status(200).json({success : true});
+    } catch (err) {
+        console.log(`error while updating password ${err.message}`);
+        return res.status(400).json({error : "an error occured while updating the password"})
+    }
 }
 
 const profilePicture = async (req, res, next) => {
