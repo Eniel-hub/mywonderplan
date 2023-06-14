@@ -37,17 +37,10 @@ const ChangePassword = async (user) =>{
     );
 }
 
-const AddProfilePicture = async (user) => {
-    await db.Query(
-        'INSER INTO user (profile_picture) VALUES ? WHERE username = ?',
-        [user.profile_picture, user.username]
-    )
-}
-
-const ChangeProfilePicture = async (user) => {
+const setProfilePicture = async (profilePicture, user) => {
     await db.Query(
         'UPDATE user SET profile_picture = ? WHERE username = ?',
-        [user.profile_picture, user.username]
+        [profilePicture, user.username]
     )
 }
 
@@ -64,6 +57,5 @@ module.exports = {
     CreateUser,
     UpdateUser,
     ChangePassword,
-    AddProfilePicture,
-    ChangeProfilePicture
+    setProfilePicture,
 };

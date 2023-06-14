@@ -31,5 +31,7 @@ router.post('/update', auth.IsAuth, middleware.updateUser);
 
 router.post('/password', auth.IsAuth, middleware.updatePassword);
 
+router.post('/ppicture', auth.IsAuth, middleware.profilePicture)
+
 //todo: save profile picture
 module.exports = router;
