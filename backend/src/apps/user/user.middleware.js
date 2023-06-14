@@ -1,7 +1,11 @@
-const service = require('./user.service');
+const nodemailer = require('nodemailer');
+require('dotenv').config();
+const env = process.env;
+
 const pportMiddleware = require('../../auth/passport.middleware');
 const helper = require('../../utils/helper');
-const path = require('path')
+const service = require('./user.service');
+const TOTP = require('../../utils/TOTP');
 
 const GetUserInfo = async(req, res, next) =>{
     let [user, ] = await service.GetUser(req.user);
@@ -50,10 +54,60 @@ const CreateUser = async (req, res, next) =>{
     }
 }
 
-const verifyEmail = async (email)=>{
-    //todo create code
-    // let code = helper.createVerificationCode(Date())
+const verifyEmailGetCode = async (req, res, next)=>{
+    // let [user, ] = await service.GetUser(req.user);
+    let [User, ] = await service.GetUser('user1');
 
+    User.verification_code = TOTP.generateAuthCode(env.OTPSECRET, 0) //code can be updated after a minute
+    await service.saveCode(User)
+    setTimeout(async () => {
+        user.verification_code = null;
+        await service.saveCode(User);
+    }, 10*60*1000); //10min later the code will be erased from the database
+
+    const config = {
+        host: 'smtp.mail.com',
+        port: 465,
+        secure: true, // Set to true if you want to use a secure connection (e.g., SSL/TLS)
+        auth: {
+            user: env.EMAIL,
+            pass: env.PSW
+        }
+    }
+    const transport = nodemailer.createTransport(config);
+
+    const mailOptions = {
+        from: env.EMAIL,
+        to: User.email,
+        subject: "Please confirm your account",
+        html: `<h1>Email Confirmation</h1>
+            <h2>Hello ${User.firstname}</h2>
+            <p>Thank you for subscribing. Please confirm your email 
+            by entering the code <b>${User.verification_code}</b></p>
+            </div>`
+      };
+
+    // Send the email
+    transport.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.log('Error occured while sending mail', error);
+            return res.status(400).json({error : error})
+        }
+        console.log(info)
+    });
+
+    return res.status(200).json({verification_code : User.verification_code})
+}
+
+const verifyEmailConfirmCode = async (req, res, next) =>{
+    let code = req.body.code;
+    let [user, ] = await service.GetUser(req.user);
+
+    if(user.verification_code == code){
+        await service.SetUserActive(user);
+        return res.status(200).json({success : true})
+    }
+    return res.status(400).json({error : 'code incorrect'})
 }
 
 const updateUser = async(req, res, next) =>{   
@@ -145,12 +199,13 @@ const profilePicture = async (req, res, next) => {
 
 module.exports = {
     Logout,
+    DeleteAcc,
     CreateUser,
     updateUser,
+    GetUserInfo,
     updatePassword,
     forgetPassword,
     profilePicture,
-    GetUserInfo,
-    verifyEmail,
-    DeleteAcc
+    verifyEmailGetCode,
+    verifyEmailConfirmCode,
 }

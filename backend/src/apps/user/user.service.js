@@ -51,11 +51,27 @@ const deleteAcc = async (user) =>{
     )
 }
 
+const saveCode = async (user) =>{
+    await db.Query(
+        `UPDATE user SET verification_code = ? WHERE username = ?`,
+        [user.verification_code, user.username]
+    )
+}
+
+const SetUserActive = async (user) =>{
+    await db.Query(
+        `UPDATE user SET statut = Active WHERE username = ?`,
+        [user.username]
+    )
+}
+
 module.exports = {
     GetUser,
+    saveCode,
     deleteAcc,
     CreateUser,
     UpdateUser,
+    SetUserActive,
     ChangePassword,
     setProfilePicture,
 };

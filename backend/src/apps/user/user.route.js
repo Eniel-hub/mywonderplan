@@ -21,7 +21,7 @@ router.get('/logout', auth.IsAuth, middleware.Logout);
 
 router.get('/delete', auth.IsAuth, middleware.DeleteAcc);
 
-router.get('/veremail', auth.IsAuth, middleware.verifyEmail);
+router.get('/veremail', auth.IsAuth, middleware.verifyEmailGetCode);
 
 router.post('/register',  middleware.CreateUser);
 
@@ -31,7 +31,10 @@ router.post('/update', auth.IsAuth, middleware.updateUser);
 
 router.post('/password', auth.IsAuth, middleware.updatePassword);
 
-router.post('/ppicture', auth.IsAuth, middleware.profilePicture)
+router.post('/ppicture', auth.IsAuth, middleware.profilePicture);
+
+router.post('/veremail', auth.IsAuth, middleware.verifyEmailConfirmCode);
+
 
 //todo: save profile picture
 module.exports = router;
