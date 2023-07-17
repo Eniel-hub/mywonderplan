@@ -24,9 +24,22 @@ function GenPassword(password) {
   return { salt, hash };
 }
 
+function getDay(date) {
+  let day = Date(date).substring(0, 3);
+  if (day.toLowerCase == "sun") return "sunday";
+  if (day.toLowerCase == "mon") return "monday";
+  if (day.toLowerCase == "tue") return "tuesday";
+  if (day.toLowerCase == "wed") return "wednesday";
+  if (day.toLowerCase == "thu") return "thursday";
+  if (day.toLowerCase == "fri") return "friday";
+  if (day.toLowerCase == "sat") return "saturday";
+  return false;
+}
+
 module.exports = {
   EmptyOrRows,
   swap,
   toHash,
   GenPassword,
+  getDay,
 };

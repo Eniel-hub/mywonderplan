@@ -33,19 +33,17 @@ const CancelTransaction = async (transaction) => {
 };
 
 const SaveTransaction = async (transaction) => {
-  const result = await db.query(
+  const result = await db.Query(
     `INSERT INTO transaction 
-    (userID, date, startDate, endDate, cost, nbAdults, ndKids, cost)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    (userID, date, startDate, endDate, nbAdults, nbKids)
+    VALUES (?, ?, ?, ?, ?, ?)`,
     [
       transaction.userID,
       transaction.date,
       transaction.startDate,
       transaction.endDate,
-      transaction.cost,
       transaction.nbAdults,
-      transaction.ndKids,
-      transaction.cost,
+      transaction.nbKids,
     ]
   );
   return result;
